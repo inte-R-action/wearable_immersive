@@ -3,6 +3,7 @@
  * 
  * Author: Uriel Martinez-Hernandez
  * Filename: slidingVibroTactileFingertip.ino
+ * Date: 20/11/2020
  * 
  * Description
  * ======================
