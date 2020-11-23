@@ -36,23 +36,24 @@
 Servo servoSliding;
 Servo servoPressure;
 
-const int outputPinSliding = 6;      // servo output pin for sliding motor
 const int outputPinPressure = 4;      // servo output pin for touch motor
 const int outputPinVibration = 5; // vibration output pin
+const int outputPinSliding = 6;      // servo output pin for sliding motor
 
 String inputString = "";
 String commandString = "";
 int commandSpeed = 0;
+int commandVibration = 0;
 boolean stringComplete = false;  // whether the string is complete
-float servoSlidingSpeed = 89;
-float servoSlidingStop = 89;
+float servoSlidingSpeed = 87;
+float servoSlidingStop = 87;
 float speedChange;
-float biasRigth = 1;
-float biasLeft = 4;
+float biasRigth = 2;
+float biasLeft = 0;
 float CalibrationPressurePosition = 0;
 
 const int noTouchPosition = 100;
-const int touchPosition = 70;
+const int touchPosition = 75;
 int touchReady = false;
 
 void setup() {
@@ -86,18 +87,23 @@ void loop() {
   {
     getCommand();
     getSpeed();
+    getVibration();
 
-    if(commandString.equals("R"))
+    if(commandString.equals("R")) // sliding stimuli in right direction
     {
         servoSlidingSpeed = servoSlidingStop + commandSpeed + biasRigth; //speedChange;
-        servoSliding.write(servoSlidingSpeed);      
+        servoSliding.write(servoSlidingSpeed);
+
+        analogWrite(outputPinVibration, commandVibration);  //vibration motor frequency
     }
-    else if(commandString.equals("L"))
+    else if(commandString.equals("L"))  // sliding stimuli in left direction
     {
         servoSlidingSpeed = servoSlidingStop - commandSpeed - biasLeft; //speedChange;
         servoSliding.write(servoSlidingSpeed);
+
+        analogWrite(outputPinVibration, commandVibration);  //vibration motor frequency
     }
-    else if(commandString.equals("T"))
+    else if(commandString.equals("T"))  // touching stimuli
     {
       if( touchReady == false )
       {
@@ -105,7 +111,7 @@ void loop() {
         touchReady = true;
       }
     }
-    else if(commandString.equals("S"))
+    else if(commandString.equals("S"))  // no touch
     {
       servoSliding.write(servoSlidingStop);
       servoPressure.write(noTouchPosition);
@@ -113,11 +119,17 @@ void loop() {
 
       touchReady = false;
     }
-    else if(commandString.equals("C"))
+    else if(commandString.equals("C"))  // calibration
     {
       servoSliding.write(servoSlidingStop);
       servoPressure.write(CalibrationPressurePosition);
       analogWrite(outputPinVibration, 0);
+    }
+    else if(commandString.equals("V"))  // calibration
+    {
+      servoSliding.write(servoSlidingStop);
+      servoPressure.write(CalibrationPressurePosition);
+      analogWrite(outputPinVibration, commandVibration);
     }
   
     inputString = "";
@@ -136,7 +148,18 @@ void getCommand()
 void getSpeed()
 {
   if(inputString.length()>0)
+    commandSpeed = inputString.substring(1,2).toInt();
+  else
+    commandSpeed = 0;
+}
+
+void getVibration()
+{
+  if(inputString.length()>0)
   {
-     commandSpeed = inputString.substring(1,2).toInt();
+    commandVibration = inputString.substring(2,3).toInt();
+    commandVibration = (80 + (commandVibration*5));
   }
+  else
+    commandVibration = 0;
 }
